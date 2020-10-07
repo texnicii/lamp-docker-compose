@@ -1,0 +1,37 @@
+version: "3.5"
+services:
+  apache:
+    container_name: lamp-apache
+    image: httpd:2.4.46
+    volumes:
+      - ./www:/var/www/html
+      - ./docker/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./docker/apache/httpd-vhosts.conf:/usr/local/apache2/conf/extra/httpd-vhosts.conf:ro
+      - ./docker/apache/httpd-php-fpm.conf:/usr/local/apache2/conf/extra/httpd-php-fpm.conf:ro
+    restart: always
+    ports:
+      - 80:80
+  php-fpm:
+    container_name: lamp-php
+    image: php:lamp-custom
+    build: ./docker/php
+    volumes:
+      - ./www:/var/www/html
+    restart: always
+    depends_on:
+      - db
+  db:
+    container_name: lamp-mariadb
+    image: mariadb:10.5
+    volumes:
+      - ./db:/var/lib/mysql
+      - ./docker/mariadb/my.cnf:/etc/mysql/conf.d/tuning.cnf
+    restart: always     
+    env_file: .env
+  pma:
+    container_name: lamp-pma
+    image: phpmyadmin
+    restart: always
+    ports:
+      - 8080:80
+    
